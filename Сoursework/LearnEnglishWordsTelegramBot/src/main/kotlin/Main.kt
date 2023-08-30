@@ -1,6 +1,7 @@
 package coursework
 
 import java.io.File
+import kotlin.math.roundToInt
 
 fun main() {
 
@@ -24,7 +25,7 @@ class ConsoleMenu {
                 1 -> println("Учим слова")
                 2 -> Statistics().getStatisticsInfo()
                 0 -> {
-                    println("Спасио что пользовались нашей программой")
+                    println("Спасио, что пользовались нашей программой")
                     return
                 }
 
@@ -60,7 +61,7 @@ class Statistics {
     private fun getPercentageRatio(): Double = (numberWordsLearned.toDouble() / numberWordsInDictionary) * 100
 
     fun getStatisticsInfo() {
-        println("Выучено $numberWordsLearned из $numberWordsInDictionary слов | $percentageRatio%")
+        println("Выучено $numberWordsLearned из $numberWordsInDictionary слов | ${(percentageRatio * 100).roundToInt() / 100.0}%")
     }
 }
 
@@ -96,5 +97,6 @@ data class Word(
         return "Слово: $text, Перевод: $translate, Правильных ответов: $correctAnswersCount"
     }
 }
+
 fun String.red() = "\u001b[31m${this}\u001b[0m"
 fun String.cyan() = "\u001b[36m${this}\u001b[0m"
