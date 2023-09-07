@@ -69,16 +69,7 @@ class Learning {
     private fun checkingCorrectAnswer(hiddenWord: String, answerWord: String) {
         if (hiddenWord == answerWord) {
             println("Вы правильно перевели слово".cyan())
-
-            WordFile().wordFile.writeText("www")
-
-            for (lineFile in WordFile().linesFile) {
-
-                lineFile
-
-            }
-
-
+            //TODO Изменить количество правильных ответов (correctAnswersCount)
         } else {
             println("Не правильный ответ".red())
         }
