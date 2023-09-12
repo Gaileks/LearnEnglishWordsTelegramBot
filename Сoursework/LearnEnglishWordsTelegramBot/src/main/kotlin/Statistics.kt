@@ -10,7 +10,7 @@ class Statistics {
     private fun getNumberWordsLearned(): Int {
         var counter = 0
         WordFile().dictionary.forEach() {
-            if (it.correctAnswersCount >= 3) counter++
+            if (it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE) counter++
         }
         return counter
     }

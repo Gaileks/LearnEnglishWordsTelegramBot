@@ -12,38 +12,37 @@ class Learning {
 
     private var fourNotLearnedWord: MutableList<Word> = mutableListOf()
 
-    private fun getFourNotLearnedWord() {
-        if (notLearnedWord.size >= 4) {
-            fourNotLearnedWord = notLearnedWord.shuffled().take(4).toMutableList()
+    private fun loadNotLearnedWords() {
+        val wordListRestriction = 4
+        if (notLearnedWord.size >= wordListRestriction) {
+            fourNotLearnedWord = notLearnedWord.shuffled().take(wordListRestriction).toMutableList()
         } else {
-            repeat(4) {
+            repeat(wordListRestriction) {
                 fourNotLearnedWord.add(notLearnedWord[(0..notLearnedWord.lastIndex).random()])
             }
         }
     }
 
     private fun addNotLearnedWord() {
+
         WordFile().dictionary.forEach() {
-            if (it.correctAnswersCount < 3) notLearnedWord.add(it)
+            if (it.correctAnswersCount < REPETITIONS_TO_MEMORIZE) notLearnedWord.add(it)
         }
     }
 
     fun startLearningMenu() {
 
         while (true) {
-            getFourNotLearnedWord()
+            loadNotLearnedWords()
             val hiddenWord = notLearnedWord.shuffled()[0]
-            val learningMenu = """          
-          1 - ${fourNotLearnedWord[0].translate}
-          2 - ${fourNotLearnedWord[1].translate}
-          3 - ${fourNotLearnedWord[2].translate}
-          4 - ${fourNotLearnedWord[3].translate}       
-               """.trimIndent() +
+            val learningMenu = fourNotLearnedWord.mapIndexed { id, it ->
+                "${id + 1} - ${it.translate} \n"
+            }.joinToString("") +
                     """
-         
           5 - Пропустить
-          6 - Главное меню     
+          6 - Главное меню
                 """.trimIndent().cyan()
+
             println("Выберете перевод слова: ${hiddenWord.text}")
             println(learningMenu)
             when (checkingInput()) {
@@ -69,7 +68,13 @@ class Learning {
     private fun checkingCorrectAnswer(hiddenWord: String, answerWord: String) {
         if (hiddenWord == answerWord) {
             println("Вы правильно перевели слово".cyan())
-            //TODO Изменить количество правильных ответов (correctAnswersCount)
+            val wordFile = WordFile()
+            wordFile.dictionary.forEach() {
+                if (it.translate == answerWord) {
+                    it.correctAnswersCount++
+                }
+            }
+            wordFile.writingToFile(wordFile)
         } else {
             println("Не правильный ответ".red())
         }
