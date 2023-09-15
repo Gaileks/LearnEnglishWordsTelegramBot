@@ -7,8 +7,8 @@ fun String.cyan() = "\u001b[36m${this}\u001b[0m"
 
 fun checkingInput(): Int {
     while (true) {
-        readln().toIntOrNull()?.let {
-            return it
-        } ?: println("Введенное значение не удовлетворяет требованиям".red())
+        readln().toIntOrNull()
+            ?.let { return it }
+            ?: println("Введенное значение не удовлетворяет требованиям".red())
     }
 }

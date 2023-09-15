@@ -1,5 +1,7 @@
 package coursework
 
+import kotlin.system.exitProcess
+
 class ConsoleMenu {
 
     private val menuItems: String = """
@@ -19,8 +21,8 @@ class ConsoleMenu {
                 2 -> Statistics().getStatisticsInfo()
                 3 -> WordFile().resetProgress()
                 0 -> {
-                    println("Спасио, что пользовались нашей программой".cyan())
-                    return
+                    println("Спасибо, что пользовались нашей программой".cyan())
+                    exitProcess(0)
                 }
 
                 else -> println("Не корректный номер пункта меню".red())
