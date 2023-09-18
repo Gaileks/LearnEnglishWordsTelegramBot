@@ -12,22 +12,21 @@ class Learning {
 
     private var fourNotLearnedWord: MutableList<Word> = mutableListOf()
 
-    private fun loadNotLearnedWords(hiddenWord: Word) {
-        val wordListRestriction = 3
+    private fun loadNotLearnedWords(): Word {
+        val wordListRestriction = 4
         if (notLearnedWord.size >= wordListRestriction) {
-            fourNotLearnedWord =
-                notLearnedWord.filterNot { it == hiddenWord }.shuffled().take(wordListRestriction).toMutableList()
-
+            fourNotLearnedWord = notLearnedWord.shuffled().take(wordListRestriction).toMutableList()
         } else {
-            repeat(wordListRestriction) {
+            fourNotLearnedWord = notLearnedWord.shuffled().toMutableList()
+            repeat(wordListRestriction - notLearnedWord.size) {
                 fourNotLearnedWord.add(notLearnedWord[(0..notLearnedWord.lastIndex).random()])
             }
         }
-        fourNotLearnedWord.add(hiddenWord)
-        fourNotLearnedWord = fourNotLearnedWord.shuffled().toMutableList()
+        return fourNotLearnedWord.random()
     }
 
     private fun addNotLearnedWord() {
+        notLearnedWord.clear()
         WordFile().dictionary.forEach() {
             if (it.correctAnswersCount < REPETITIONS_TO_MEMORIZE) notLearnedWord.add(it)
         }
@@ -35,8 +34,7 @@ class Learning {
 
     fun startLearningMenu() {
         while (true) {
-            val hiddenWord = notLearnedWord.random()
-            loadNotLearnedWords(hiddenWord)
+            val hiddenWord = loadNotLearnedWords()
             val learningMenu = fourNotLearnedWord.mapIndexed { id, it ->
                 "${id + 1} - ${it.translate} \n"
             }.joinToString("") +
@@ -57,6 +55,7 @@ class Learning {
                 fourNotLearnedWord.size + 2 -> ConsoleMenu().startTheMenu()
                 else -> println("Не корректный номер пункта меню".red())
             }
+            checkingLearnedWords()
         }
     }
 
@@ -78,6 +77,7 @@ class Learning {
                 }
             }
             wordFile.writingToFile(wordFile)
+            addNotLearnedWord()
         } else {
             println("Не правильный ответ".red())
         }
