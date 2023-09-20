@@ -20,15 +20,18 @@ class Learning {
     fun startLearningMenu() {
         while (true) {
             val wordListRestriction = 4
-            val questionWords = notLearnedWord.shuffled().take(wordListRestriction)
-            val hiddenWord = questionWords.random()
-            val fourNotLearnedWord = if (questionWords.size < wordListRestriction) {
-                val learnedWord = WordFile().dictionary
-                    .filter { it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE }
-                questionWords + learnedWord.shuffled()
-                    .take(wordListRestriction - questionWords.size)
-            } else questionWords
-
+            val (hiddenWord: Word, fourNotLearnedWord: List<Word>) =
+                notLearnedWord.shuffled().take(wordListRestriction)
+                    .let { questionWords ->
+                        val hiddenWord = questionWords.random()
+                        val words = if (questionWords.size < wordListRestriction) {
+                            val learnedWord = WordFile().dictionary
+                                .filter { it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE }
+                            questionWords + learnedWord.shuffled()
+                                .take(wordListRestriction - questionWords.size)
+                        } else questionWords
+                        hiddenWord to words
+                    }
             val learningMenu = fourNotLearnedWord.mapIndexed { id, it ->
                 "${id + 1} - ${it.translate} \n"
             }.joinToString("") +
