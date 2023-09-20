@@ -10,21 +10,6 @@ class Learning {
         checkingLearnedWords()
     }
 
-    private var fourNotLearnedWord: MutableList<Word> = mutableListOf()
-
-    private fun loadNotLearnedWords(): Word {
-        val wordListRestriction = 4
-        if (notLearnedWord.size >= wordListRestriction) {
-            fourNotLearnedWord = notLearnedWord.shuffled().take(wordListRestriction).toMutableList()
-        } else {
-            fourNotLearnedWord = notLearnedWord.shuffled().toMutableList()
-            repeat(wordListRestriction - notLearnedWord.size) {
-                fourNotLearnedWord.add(notLearnedWord[(0..notLearnedWord.lastIndex).random()])
-            }
-        }
-        return fourNotLearnedWord.random()
-    }
-
     private fun addNotLearnedWord() {
         notLearnedWord.clear()
         WordFile().dictionary.forEach() {
@@ -34,7 +19,16 @@ class Learning {
 
     fun startLearningMenu() {
         while (true) {
-            val hiddenWord = loadNotLearnedWords()
+            val wordListRestriction = 4
+            val questionWords = notLearnedWord.shuffled().take(wordListRestriction)
+            val hiddenWord = questionWords.random()
+            val fourNotLearnedWord = if (questionWords.size < wordListRestriction) {
+                val learnedWord = WordFile().dictionary
+                    .filter { it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE }
+                questionWords + learnedWord.shuffled()
+                    .take(wordListRestriction - questionWords.size)
+            } else questionWords
+
             val learningMenu = fourNotLearnedWord.mapIndexed { id, it ->
                 "${id + 1} - ${it.translate} \n"
             }.joinToString("") +
