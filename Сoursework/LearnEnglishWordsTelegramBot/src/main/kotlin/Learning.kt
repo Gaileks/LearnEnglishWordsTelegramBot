@@ -3,35 +3,13 @@ package coursework
 import kotlin.system.exitProcess
 
 class Learning {
-    private val notLearnedWord: MutableList<Word> = mutableListOf()
-
-    init {
-        addNotLearnedWord()
-        checkingLearnedWords()
-    }
-
-    private fun addNotLearnedWord() {
-        notLearnedWord.clear()
-        WordFile().dictionary.forEach() {
-            if (it.correctAnswersCount < REPETITIONS_TO_MEMORIZE) notLearnedWord.add(it)
-        }
-    }
 
     fun startLearningMenu() {
+        val programLogic = ProgramLogic()
+        val dataInputOutput = DataInputOutput()
+        val consoleMenu = ConsoleMenu()
         while (true) {
-            val wordListRestriction = 4
-            val (hiddenWord: Word, fourNotLearnedWord: List<Word>) =
-                notLearnedWord.shuffled().take(wordListRestriction)
-                    .let { questionWords ->
-                        val hiddenWord = questionWords.random()
-                        val words = if (questionWords.size < wordListRestriction) {
-                            val learnedWord = WordFile().dictionary
-                                .filter { it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE }
-                            questionWords + learnedWord.shuffled()
-                                .take(wordListRestriction - questionWords.size)
-                        } else questionWords
-                        hiddenWord to words
-                    }
+            val (hiddenWord, fourNotLearnedWord) = programLogic.listOfResponseOptions()
             val learningMenu = fourNotLearnedWord.mapIndexed { id, it ->
                 "${id + 1} - ${it.translate} \n"
             }.joinToString("") +
@@ -40,43 +18,19 @@ class Learning {
           6 - Главное меню
                 """.trimIndent().cyan()
 
-            println("Выберете перевод слова: ${hiddenWord.text}")
-            println(learningMenu)
-            when (val response = checkingInput()) {
-                in 1..fourNotLearnedWord.size -> checkingCorrectAnswer(
+            dataInputOutput.dataOutput("Выберете перевод слова: ${hiddenWord.text}")
+            dataInputOutput.dataOutput(learningMenu)
+            when (val response = dataInputOutput.checkingInput()) {
+                in 1..fourNotLearnedWord.size -> programLogic.checkingCorrectAnswer(
                     hiddenWord.translate,
                     fourNotLearnedWord[response - 1].translate
                 )
 
                 fourNotLearnedWord.size + 1 -> continue
-                fourNotLearnedWord.size + 2 -> ConsoleMenu().startTheMenu()
-                else -> println("Не корректный номер пункта меню".red())
+                fourNotLearnedWord.size + 2 -> consoleMenu.startTheMenu()
+                else -> dataInputOutput.dataOutput("Не корректный номер пункта меню".red())
             }
-            checkingLearnedWords()
-        }
-    }
-
-    private fun checkingLearnedWords() {
-        if (notLearnedWord.isEmpty()) {
-            println("Поздравляем, вы выучили все слова !!!".cyan())
-            println("Спасибо, что пользовались нашей программой".cyan())
-            exitProcess(0)
-        }
-    }
-
-    private fun checkingCorrectAnswer(hiddenWord: String, answerWord: String) {
-        if (hiddenWord == answerWord) {
-            println("Вы правильно перевели слово".cyan())
-            val wordFile = WordFile()
-            wordFile.dictionary.forEach() {
-                if (it.translate == answerWord) {
-                    it.correctAnswersCount++
-                }
-            }
-            wordFile.writingToFile(wordFile)
-            addNotLearnedWord()
-        } else {
-            println("Не правильный ответ".red())
+            programLogic.checkingLearnedWords()
         }
     }
 }
