@@ -1,13 +1,16 @@
 package coursework
 
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
-class ProgramLogic {
+class ProgramLogicStudyWords {
+    private val fileDictionaryDataStore = FileDictionaryDataStore()
+    private var dictionary = fileDictionaryDataStore.dictionary
+    private val dataInputOutput = DataInputOutput()
 
-    private fun getNotLearnedWord(): MutableList<Word> {
-        val uploadSaveData = UploadSaveData()
+    private fun getNotLearnedWord(): List<Word> {
         val notLearnedWord: MutableList<Word> = mutableListOf()
-        uploadSaveData.loadDictionary().forEach() {
+        dictionary.forEach() {
             if (it.correctAnswersCount < REPETITIONS_TO_MEMORIZE) notLearnedWord.add(it)
         }
         return notLearnedWord
@@ -16,10 +19,9 @@ class ProgramLogic {
     fun listOfResponseOptions(): Pair<Word, List<Word>> =
         getNotLearnedWord().shuffled().take(4)
             .let { questionWords ->
-                val uploadSaveData = UploadSaveData()
                 val hiddenWord = questionWords.random()
                 val words = if (questionWords.size < 4) {
-                    val learnedWord = uploadSaveData.loadDictionary()
+                    val learnedWord = dictionary
                         .filter { it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE }
                     questionWords + learnedWord.shuffled()
                         .take(4 - questionWords.size)
@@ -28,7 +30,6 @@ class ProgramLogic {
             }
 
     fun checkingLearnedWords() {
-        val dataInputOutput = DataInputOutput()
         if (getNotLearnedWord().isEmpty()) {
             dataInputOutput.dataOutput("Поздравляем, вы выучили все слова !!!".cyan())
             dataInputOutput.dataOutput("Спасибо, что пользовались нашей программой".cyan())
@@ -37,9 +38,7 @@ class ProgramLogic {
     }
 
     fun checkingCorrectAnswer(hiddenWord: String, answerWord: String) {
-        val dataInputOutput = DataInputOutput()
-        val uploadSaveData = UploadSaveData()
-        val dictionary = uploadSaveData.loadDictionary()
+        val dictionary = dictionary
         if (hiddenWord == answerWord) {
             dataInputOutput.dataOutput("Вы правильно перевели слово".cyan())
             dictionary.map {
@@ -55,19 +54,24 @@ class ProgramLogic {
     }
 
     fun resetProgress() {
-        val uploadSaveData = UploadSaveData()
-        val textToWriting = uploadSaveData.loadDictionary().joinToString("") {
-            "${it.text}|${it.translate}|${0}\n"
-        }
-        uploadSaveData.saveData(textToWriting)
+        fileDictionaryDataStore.resetProgress()
+        this.dictionary = FileDictionaryDataStore().loadDictionary()
     }
 
-    private fun writingToFile(dictionary: MutableList<Word>) {
-        val uploadSaveData = UploadSaveData()
+    private fun writingToFile(dictionary: List<Word>) {
         val textToWriting = dictionary.joinToString("") {
             "${it.text}|${it.translate}|${it.correctAnswersCount}\n"
         }
-        println(textToWriting)
-        uploadSaveData.saveData(textToWriting)
+        //println(textToWriting) проверка
+        FileDictionaryDataStore().saveData(textToWriting)
+    }
+
+    fun getStatisticsInfo() {
+        var numberWordsLearned = 0
+        dictionary.forEach() { if (it.correctAnswersCount >= REPETITIONS_TO_MEMORIZE) numberWordsLearned++ }
+
+        val percentageRatio = (numberWordsLearned.toDouble() / dictionary.size) * 100
+
+        dataInputOutput.dataOutput("Выучено $numberWordsLearned из ${dictionary.size} слов | ${(percentageRatio * 100).roundToInt() / 100.0}%")
     }
 }

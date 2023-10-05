@@ -1,11 +1,9 @@
 package coursework
 
-import kotlin.system.exitProcess
-
 class Learning {
 
     fun startLearningMenu() {
-        val programLogic = ProgramLogic()
+        val programLogic = ProgramLogicStudyWords()
         val dataInputOutput = DataInputOutput()
         val consoleMenu = ConsoleMenu()
         while (true) {

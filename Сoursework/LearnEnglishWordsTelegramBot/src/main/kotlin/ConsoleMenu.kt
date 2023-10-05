@@ -14,7 +14,7 @@ class ConsoleMenu {
     fun startTheMenu() {
         val dataInputOutput = DataInputOutput()
         val learning = Learning()
-        val programLogic = ProgramLogic()
+        val programLogic = ProgramLogicStudyWords()
 
         while (true) {
             dataInputOutput.dataOutput(menuItems)
@@ -24,7 +24,7 @@ class ConsoleMenu {
                     learning.startLearningMenu()
                 }
 
-                2 -> Statistics().getStatisticsInfo()
+                2 -> programLogic.getStatisticsInfo()
                 3 -> programLogic.resetProgress()
                 0 -> {
                     dataInputOutput.dataOutput("Спасибо, что пользовались нашей программой".cyan())
