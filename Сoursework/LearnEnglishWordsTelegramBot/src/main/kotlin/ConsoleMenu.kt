@@ -1,7 +1,5 @@
 package coursework
 
-import kotlin.system.exitProcess
-
 class ConsoleMenu {
 
     private val menuItems: String = """
@@ -14,18 +12,26 @@ class ConsoleMenu {
 """.trimIndent()
 
     fun startTheMenu() {
+        val dataInputOutput = DataInputOutput()
+        val learning = Learning()
+        val programLogic = ProgramLogicStudyWords()
+
         while (true) {
-            println(menuItems)
-            when (checkingInput()) {
-                1 -> Learning().startLearningMenu()
-                2 -> Statistics().getStatisticsInfo()
-                3 -> WordFile().resetProgress()
-                0 -> {
-                    println("Спасибо, что пользовались нашей программой".cyan())
-                    exitProcess(0)
+            dataInputOutput.dataOutput(menuItems)
+            when (dataInputOutput.checkingInput()) {
+                1 -> {
+                    programLogic.checkingLearnedWords()
+                    learning.startLearningMenu()
                 }
 
-                else -> println("Не корректный номер пункта меню".red())
+                2 -> programLogic.getStatisticsInfo()
+                3 -> programLogic.resetProgress()
+                0 -> {
+                    dataInputOutput.dataOutput("Спасибо, что пользовались нашей программой".cyan())
+                    dataInputOutput.endProgram()
+                }
+
+                else -> dataInputOutput.dataOutput("Не корректный номер пункта меню".red())
 
             }
         }
