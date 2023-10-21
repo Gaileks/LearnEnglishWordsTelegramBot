@@ -16,7 +16,7 @@ class LearnWordsTrainer(
     private val learnedAnswerCount: Int = 3,
     private val countOfQuestionWords: Int = 4
 ) {
-    private var dictionary = try {
+    var dictionary = try {
         loadDictionary()
     } catch (e: Exception) {
         println("Невозможно загрузить словарь".red())
@@ -44,52 +44,36 @@ class LearnWordsTrainer(
         return Question(variants = questionWords, correctAnswer = correctAnswer)
     }
 
-    fun checkingCorrectAnswer(hiddenWord: String, answerWord: String): Boolean {
-        return if (hiddenWord == answerWord) {
-            dictionary.map {
-                if (it.translate == answerWord) {
-                    it.correctAnswersCount++
-                }
-            }
-            writingToFile(dictionary)
-            true
-        } else {
-            false
-        }
-    }
-
-    fun resetProgress() {
-        val textToWriting = dictionary.joinToString("") {
-            "${it.questionWord}|${it.translate}|${0}\n"
-        }
-        saveData(textToWriting)
-        dictionary = loadDictionary()
+    fun resetProgress(): List<Word> = dictionary.map {
+        Word(it.questionWord, it.translate, 0)
     }
 
     fun endProgram(): Nothing = exitProcess(0)
 
-    private fun loadDictionary(): MutableList<Word> {
-        val dictionary: MutableList<Word> = mutableListOf()
+    fun writingToFile(dictionary: List<Word>) {
         val wordFile = File("words.txt")
-        wordFile.readLines().forEach {
-            val line = it.split("|")
-            dictionary.add(Word(line[0], line[1], line[2].toIntOrNull() ?: 0))
-        }
-        return dictionary
-    }
-
-    private fun saveData(textToWriting: String) {
-        val wordFile = File("words.txt")
-        wordFile.writeText(textToWriting)
-        loadDictionary()
-    }
-
-    private fun writingToFile(dictionary: List<Word>) {
         val textToWriting = dictionary.joinToString("") {
             "${it.questionWord}|${it.translate}|${it.correctAnswersCount}\n"
         }
-        LearnWordsTrainer().saveData(textToWriting)
+        wordFile.writeText(textToWriting)
     }
 }
+
+private fun loadDictionary(): List<Word> {
+    val dictionary: MutableList<Word> = mutableListOf()
+    val wordFile = File("words.txt")
+    wordFile.readLines().mapNotNull {
+        val line = it.split("|")
+        dictionary.add(
+            Word(
+                line.getOrNull(0) ?: return@mapNotNull null,
+                line.getOrNull(1) ?: return@mapNotNull null,
+                line[2].toIntOrNull() ?: 0
+            )
+        )
+    }
+    return dictionary
+}
+
 
 

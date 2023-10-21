@@ -22,17 +22,17 @@ class ConsoleMenu {
 
             println(menuItems)
             when (checkingInput()) {
-                1 -> {
-                    checkingLearnedWords()
-                    startLearningMenu()
-                }
-
+                1 -> startLearningMenu()
                 2 -> {
                     val statistics = trainer.getStatistics()
                     println("Выучено ${statistics.learned} из ${statistics.total} слов | ${statistics.percent}%")
                 }
 
-                3 -> trainer.resetProgress()
+                3 -> {
+                    trainer.dictionary = trainer.resetProgress()
+                    trainer.writingToFile(trainer.dictionary)
+                }
+
                 0 -> {
                     println("Спасибо, что пользовались нашей программой".cyan())
                     trainer.endProgram()
@@ -45,7 +45,7 @@ class ConsoleMenu {
 
     private fun startLearningMenu() {
         val consoleMenu = ConsoleMenu()
-        while (true) {
+        loop@ while (true) {
             val question = trainer.getNextQuestion()
             if (question != null) {
 
@@ -53,29 +53,25 @@ class ConsoleMenu {
                 println(question.asConsoleString())
 
                 when (val response = checkingInput()) {
-                    in 1..question.variants.size -> if (trainer.checkingCorrectAnswer(
-                            question.correctAnswer.translate,
-                            question.variants[response - 1].translate
-                        )
-                    ) {
-                        println("Вы правильно перевели слово".cyan())
-                        checkingLearnedWords()
-                    } else println("Не правильный ответ".red() + " - правильный ответ: ${question.correctAnswer.translate}")
+                    in 1..question.variants.size ->
+                        if (question.correctAnswer.translate == question.variants[response - 1].translate) {
+                            println("Вы правильно перевели слово".cyan())
+                            val correctAnswerIndex = trainer.dictionary.indexOf(question.correctAnswer)
+                            trainer.dictionary[correctAnswerIndex].correctAnswersCount++
+                            trainer.writingToFile(trainer.dictionary)
+
+                        } else println("Не правильный ответ".red() + " - правильный ответ: ${question.correctAnswer.translate}")
 
                     question.variants.size + 1 -> continue
                     question.variants.size + 2 -> consoleMenu.startTheMenu()
                     else -> println("Не корректный номер пункта меню".red())
                 }
+            } else {
+                println("Поздравляем, вы выучили все слова !!!".cyan())
+                break@loop
             }
         }
-    }
-
-    private fun checkingLearnedWords() {
-        val question = trainer.getNextQuestion()
-        if (question == null) {
-            println("Поздравляем, вы выучили все слова !!!".cyan())
-            startTheMenu()
-        }
+        startTheMenu()
     }
 
     private fun checkingInput(): Int {
