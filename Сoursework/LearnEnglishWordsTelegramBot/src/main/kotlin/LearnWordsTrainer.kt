@@ -64,8 +64,8 @@ class LearnWordsTrainer(
     private fun loadDictionary(): List<Word> {
         val dictionary: MutableList<Word> = mutableListOf()
         val wordFile = File(wordFileName)
-        wordFile.readLines().mapNotNull { s ->
-            val line = s.split("|").filter { it.isNotEmpty() }
+        wordFile.readLines().mapNotNull { it ->
+            val line = it.split("|").filter { it.isNotEmpty() }
             if (line.size == 3) {
                 dictionary.add(
                     Word(
