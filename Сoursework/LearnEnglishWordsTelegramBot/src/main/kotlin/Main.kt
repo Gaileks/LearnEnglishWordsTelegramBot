@@ -1,9 +1,3 @@
 fun main() {
     ConsoleMenu().startTheMenu()
 }
-
-
-
-
-
-

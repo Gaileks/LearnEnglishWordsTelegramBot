@@ -1,13 +1,13 @@
+import kotlin.system.exitProcess
+
 data class Word(
     val questionWord: String,
     val translate: String,
-    var correctAnswersCount: Int = 0,
+    var correctAnswersCount: Int,
 )
 
 class ConsoleMenu {
-
     private val trainer = LearnWordsTrainer()
-
     private val menuItems: String = """
     (Введите пункт меню) 
     Меню: 
@@ -30,12 +30,11 @@ class ConsoleMenu {
 
                 3 -> {
                     trainer.dictionary = trainer.resetProgress()
-                    trainer.writingToFile(trainer.dictionary)
                 }
 
                 0 -> {
                     println("Спасибо, что пользовались нашей программой".cyan())
-                    trainer.endProgram()
+                    exitProcess(0)
                 }
 
                 else -> println("Не корректный номер пункта меню".red())
@@ -44,7 +43,6 @@ class ConsoleMenu {
     }
 
     private fun startLearningMenu() {
-        val consoleMenu = ConsoleMenu()
         loop@ while (true) {
             val question = trainer.getNextQuestion()
             if (question != null) {
@@ -63,7 +61,7 @@ class ConsoleMenu {
                         } else println("Не правильный ответ".red() + " - правильный ответ: ${question.correctAnswer.translate}")
 
                     question.variants.size + 1 -> continue
-                    question.variants.size + 2 -> consoleMenu.startTheMenu()
+                    question.variants.size + 2 -> return
                     else -> println("Не корректный номер пункта меню".red())
                 }
             } else {
@@ -82,6 +80,3 @@ class ConsoleMenu {
         }
     }
 }
-
-
-

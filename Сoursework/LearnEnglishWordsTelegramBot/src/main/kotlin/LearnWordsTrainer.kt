@@ -13,6 +13,7 @@ data class Question(
 )
 
 class LearnWordsTrainer(
+    private val wordFileName: String = "words.txt",
     private val learnedAnswerCount: Int = 3,
     private val countOfQuestionWords: Int = 4
 ) {
@@ -20,7 +21,7 @@ class LearnWordsTrainer(
         loadDictionary()
     } catch (e: Exception) {
         println("Невозможно загрузить словарь".red())
-        endProgram()
+        exitProcess(0)
     }
 
     fun getStatistics(): Statistics {
@@ -44,36 +45,37 @@ class LearnWordsTrainer(
         return Question(variants = questionWords, correctAnswer = correctAnswer)
     }
 
-    fun resetProgress(): List<Word> = dictionary.map {
-        Word(it.questionWord, it.translate, 0)
+    fun resetProgress(): List<Word> {
+        val dictionary = this.dictionary.map {
+            Word(it.questionWord, it.translate, 0)
+        }
+        writingToFile(dictionary)
+        return dictionary
     }
 
-    fun endProgram(): Nothing = exitProcess(0)
-
     fun writingToFile(dictionary: List<Word>) {
-        val wordFile = File("words.txt")
+        val wordFile = File(wordFileName)
         val textToWriting = dictionary.joinToString("") {
             "${it.questionWord}|${it.translate}|${it.correctAnswersCount}\n"
         }
         wordFile.writeText(textToWriting)
     }
-}
 
-private fun loadDictionary(): List<Word> {
-    val dictionary: MutableList<Word> = mutableListOf()
-    val wordFile = File("words.txt")
-    wordFile.readLines().mapNotNull {
-        val line = it.split("|")
-        dictionary.add(
-            Word(
-                line.getOrNull(0) ?: return@mapNotNull null,
-                line.getOrNull(1) ?: return@mapNotNull null,
-                line[2].toIntOrNull() ?: 0
-            )
-        )
+    private fun loadDictionary(): List<Word> {
+        val dictionary: MutableList<Word> = mutableListOf()
+        val wordFile = File(wordFileName)
+        wordFile.readLines().mapNotNull { s ->
+            val line = s.split("|").filter { it.isNotEmpty() }
+            if (line.size == 3) {
+                dictionary.add(
+                    Word(
+                        line.getOrNull(0) ?: return@mapNotNull null,
+                        line.getOrNull(1) ?: return@mapNotNull null,
+                        line[2].toIntOrNull() ?: return@mapNotNull null
+                    )
+                )
+            } else null
+        }
+        return dictionary
     }
-    return dictionary
 }
-
-
-
