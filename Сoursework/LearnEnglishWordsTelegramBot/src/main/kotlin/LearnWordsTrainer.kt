@@ -1,5 +1,4 @@
 import java.io.File
-import kotlin.system.exitProcess
 
 data class Statistics(
     val learned: Int,
@@ -17,12 +16,7 @@ class LearnWordsTrainer(
     private val learnedAnswerCount: Int = 3,
     private val countOfQuestionWords: Int = 4
 ) {
-    var dictionary = try {
-        loadDictionary()
-    } catch (e: Exception) {
-        println("Невозможно загрузить словарь".red())
-        exitProcess(0)
-    }
+    var dictionary = loadDictionary()
 
     fun getStatistics(): Statistics {
         val learned = dictionary.filter { it.correctAnswersCount >= learnedAnswerCount }.size
@@ -62,20 +56,17 @@ class LearnWordsTrainer(
     }
 
     private fun loadDictionary(): List<Word> {
-        val dictionary: MutableList<Word> = mutableListOf()
-        val wordFile = File(wordFileName)
-        wordFile.readLines().mapNotNull { it ->
-            val line = it.split("|").filter { it.isNotEmpty() }
-            if (line.size == 3) {
-                dictionary.add(
+        return File(wordFileName)
+            .readLines()
+            .mapNotNull { it ->
+                val line = it.split("|").filter { it.isNotEmpty() }
+                if (line.size == 3) {
                     Word(
                         line.getOrNull(0) ?: return@mapNotNull null,
                         line.getOrNull(1) ?: return@mapNotNull null,
                         line[2].toIntOrNull() ?: return@mapNotNull null
                     )
-                )
-            } else null
-        }
-        return dictionary
+                } else null
+            }
     }
 }

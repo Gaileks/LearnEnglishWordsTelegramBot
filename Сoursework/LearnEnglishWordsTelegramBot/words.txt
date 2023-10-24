@@ -7,7 +7,7 @@ abstract|абстрактный|3
 assignment|присвоение|4
 binary|двоичный|3
 device|устройство|1
-laptop|ноутбук|1
+laptop|ноутбук|2
 port|разъем|1
 keyboard|клавиатура|3
 compiler|компилятор|3

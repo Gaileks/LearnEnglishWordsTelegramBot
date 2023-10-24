@@ -7,7 +7,12 @@ data class Word(
 )
 
 class ConsoleMenu {
-    private val trainer = LearnWordsTrainer()
+    private val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь".red())
+        exitProcess(0)
+    }
     private val menuItems: String = """
     (Введите пункт меню) 
     Меню: 
@@ -19,7 +24,6 @@ class ConsoleMenu {
 
     fun startTheMenu() {
         while (true) {
-
             println(menuItems)
             when (checkingInput()) {
                 1 -> startLearningMenu()
@@ -69,7 +73,6 @@ class ConsoleMenu {
                 break@loop
             }
         }
-        startTheMenu()
     }
 
     private fun checkingInput(): Int {
