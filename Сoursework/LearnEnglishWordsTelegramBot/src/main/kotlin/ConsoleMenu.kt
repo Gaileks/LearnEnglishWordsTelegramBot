@@ -1,7 +1,18 @@
-package coursework
+import kotlin.system.exitProcess
+
+data class Word(
+    val questionWord: String,
+    val translate: String,
+    var correctAnswersCount: Int,
+)
 
 class ConsoleMenu {
-
+    private val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь".red())
+        exitProcess(0)
+    }
     private val menuItems: String = """
     (Введите пункт меню) 
     Меню: 
@@ -12,29 +23,63 @@ class ConsoleMenu {
 """.trimIndent()
 
     fun startTheMenu() {
-        val dataInputOutput = DataInputOutput()
-        val learning = Learning()
-        val programLogic = ProgramLogicStudyWords()
-
         while (true) {
-            dataInputOutput.dataOutput(menuItems)
-            when (dataInputOutput.checkingInput()) {
-                1 -> {
-                    programLogic.checkingLearnedWords()
-                    learning.startLearningMenu()
+            println(menuItems)
+            when (checkingInput()) {
+                1 -> startLearningMenu()
+                2 -> {
+                    val statistics = trainer.getStatistics()
+                    println("Выучено ${statistics.learned} из ${statistics.total} слов | ${statistics.percent}%")
                 }
 
-                2 -> programLogic.getStatisticsInfo()
-                3 -> programLogic.resetProgress()
+                3 -> {
+                    trainer.dictionary = trainer.resetProgress()
+                }
+
                 0 -> {
-                    dataInputOutput.dataOutput("Спасибо, что пользовались нашей программой".cyan())
-                    dataInputOutput.endProgram()
+                    println("Спасибо, что пользовались нашей программой".cyan())
+                    exitProcess(0)
                 }
 
-                else -> dataInputOutput.dataOutput("Не корректный номер пункта меню".red())
-
+                else -> println("Не корректный номер пункта меню".red())
             }
         }
     }
-}
 
+    private fun startLearningMenu() {
+        loop@ while (true) {
+            val question = trainer.getNextQuestion()
+            if (question != null) {
+
+                println("Выберете перевод слова: ${question.correctAnswer.questionWord}")
+                println(question.asConsoleString())
+
+                when (val response = checkingInput()) {
+                    in 1..question.variants.size ->
+                        if (question.correctAnswer.translate == question.variants[response - 1].translate) {
+                            println("Вы правильно перевели слово".cyan())
+                            val correctAnswerIndex = trainer.dictionary.indexOf(question.correctAnswer)
+                            trainer.dictionary[correctAnswerIndex].correctAnswersCount++
+                            trainer.writingToFile(trainer.dictionary)
+
+                        } else println("Не правильный ответ".red() + " - правильный ответ: ${question.correctAnswer.translate}")
+
+                    question.variants.size + 1 -> continue
+                    question.variants.size + 2 -> return
+                    else -> println("Не корректный номер пункта меню".red())
+                }
+            } else {
+                println("Поздравляем, вы выучили все слова !!!".cyan())
+                break@loop
+            }
+        }
+    }
+
+    private fun checkingInput(): Int {
+        while (true) {
+            readln().toIntOrNull()
+                ?.let { return it }
+                ?: println("Введенное значение не удовлетворяет требованиям".red())
+        }
+    }
+}
