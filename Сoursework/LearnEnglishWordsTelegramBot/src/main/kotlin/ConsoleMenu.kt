@@ -1,11 +1,5 @@
 import kotlin.system.exitProcess
 
-data class Word(
-    val questionWord: String,
-    val translate: String,
-    var correctAnswersCount: Int,
-)
-
 class ConsoleMenu {
     private val trainer = try {
         LearnWordsTrainer()
@@ -51,7 +45,7 @@ class ConsoleMenu {
             val question = trainer.getNextQuestion()
             if (question != null) {
 
-                println("Выберете перевод слова: ${question.correctAnswer.questionWord}")
+                println("Выберите перевод слова: ${question.correctAnswer.questionWord}")
                 println(question.asConsoleString())
 
                 when (val response = checkingInput()) {
