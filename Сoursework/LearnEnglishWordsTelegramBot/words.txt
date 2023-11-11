@@ -6,14 +6,14 @@ human|человек|3
 abstract|абстрактный|3
 assignment|присвоение|4
 binary|двоичный|3
-device|устройство|1
+device|устройство|2
 laptop|ноутбук|2
 port|разъем|1
 keyboard|клавиатура|3
 compiler|компилятор|3
 debugger|отладчик|3
-kernel|ядро|1
-query|запрос|1
+kernel|ядро|2
+query|запрос|2
 template|шаблон|3
 encoding|кодировка|3
 firmware|прошивка|3

@@ -11,16 +11,18 @@ const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val RESET_PROGRESS = "reset_progress"
 const val MAIN_MENU = "/start"
 
-class TelegramBotService(private val client: HttpClient = HttpClient.newBuilder().build()) {
+class TelegramBotService(
+    private val client: HttpClient = HttpClient.newBuilder().build(),
+    private val  botToken: String = "6851327046:AAET76sF9a19AfdUNXv7j4SVXI1vUjU5q7Y") {
 
-    fun getUpdates(botToken: String, updateId: Int): String {
+    fun getUpdates(updateId: Int): String {
         val urlGetUpdates = "$API_TELEGRAM$botToken/getUpdates?offset=$updateId"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
         return response.body()
     }
 
-    fun sendMessage(botToken: String, chatId: Int, message: String): String {
+    fun sendMessage(chatId: Int, message: String): String {
         val encoded = URLEncoder.encode(
             message,
             StandardCharsets.UTF_8
@@ -31,7 +33,7 @@ class TelegramBotService(private val client: HttpClient = HttpClient.newBuilder(
         return response.body()
     }
 
-    fun sendMenu(botToken: String, chatId: Int): String {
+    fun sendMenu(chatId: Int): String {
         val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
         val sendMenuBody = """
             {
@@ -67,34 +69,17 @@ class TelegramBotService(private val client: HttpClient = HttpClient.newBuilder(
         return response.body()
     }
 
-    fun sendingQuestionUser(botToken: String, chatId: Int, question: Question?): String {
+    fun sendingQuestionUser(chatId: Int, question: Question?): String {
         if (question != null) {
             val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
-
+            val keyboardLayout =
+                question.variants.joinToString(",") { word: Word -> """ {"text": "${word.translate}", "callback_data": "${word.questionWord}"  }""" }
             val sendMenuBody = """
             {
                 "chat_id": $chatId,                
                 "text": "Выберите перевод слова: ${question.correctAnswer.questionWord}",
                 "reply_markup": {
-                    "inline_keyboard": [
-                        [
-                            {
-                                "text": "${question.variants[0].translate}",
-                                "callback_data": "${question.variants[0].questionWord}"
-                            },
-                            {
-                                "text": "${question.variants[1].translate}",
-                                "callback_data": "${question.variants[1].questionWord}"
-                            },
-                                {
-                                "text": "${question.variants[2].translate}",
-                                "callback_data": "${question.variants[2].questionWord}"
-                            },
-                                {
-                                "text": "${question.variants[3].translate}",
-                                "callback_data": "${question.variants[3].questionWord}"
-                            }                            
-                        ],
+                    "inline_keyboard": [[$keyboardLayout],
                          [                          
                             {
                                 "text": "Вернуться в основное меню",
@@ -116,8 +101,8 @@ class TelegramBotService(private val client: HttpClient = HttpClient.newBuilder(
             return response.body()
         } else
             return """
-                ${sendMessage(botToken, chatId, "Поздравляем, вы выучили все слова !!!")}
-                ${sendMenu(botToken, chatId)}
+                ${sendMessage(chatId, "Поздравляем, вы выучили все слова !!!")}
+                ${sendMenu(chatId)}
             """.trimIndent()
     }
 }
