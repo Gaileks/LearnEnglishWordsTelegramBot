@@ -5,6 +5,11 @@ data class Statistics(
     val total: Int,
     val percent: Int,
 )
+data class Word(
+    val questionWord: String,
+    val translate: String,
+    var correctAnswersCount: Int,
+)
 
 data class Question(
     val variants: List<Word>,
