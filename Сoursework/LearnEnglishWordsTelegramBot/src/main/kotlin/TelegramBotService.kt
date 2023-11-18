@@ -1,4 +1,3 @@
-
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URI
@@ -14,17 +13,17 @@ const val MAIN_MENU = "/start"
 
 class TelegramBotService(
     private val client: HttpClient = HttpClient.newBuilder().build(),
-    private val botToken: String = "6851327046:AAET76sF9a19AfdUNXv7j4SVXI1vUjU5q7Y"
 ) {
+    private val json = Json { ignoreUnknownKeys = true }
 
-    fun getUpdates(updateId: Long): String {
+    fun getUpdates(updateId: Long, botToken: String): String {
         val urlGetUpdates = "$API_TELEGRAM$botToken/getUpdates?offset=$updateId"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
         return response.body()
     }
 
-    fun sendMessage(chatId: Long, message: String,json: Json): String {
+    fun sendMessage(chatId: Long, message: String, botToken: String): String {
         val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId,
@@ -39,7 +38,7 @@ class TelegramBotService(
         return response.body()
     }
 
-    fun sendMenu(chatId: Long, json: Json): String {
+    fun sendMenu(chatId: Long, botToken: String): String {
         val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId,
@@ -47,10 +46,12 @@ class TelegramBotService(
             ReplyMarkup(
                 listOf(
                     listOf(
-                        InlineKeyboard("Изучить слова", "$LEARN_WORDS_CLICKED"),
-                        InlineKeyboard("Статистика", "$STATISTICS_CLICKED"),
-                        InlineKeyboard("Сброс прогресса", "$RESET_PROGRESS")
-                    )
+                        InlineKeyboard("Изучить слова", LEARN_WORDS_CLICKED),
+                    ),
+                    listOf(
+                        InlineKeyboard("Статистика", STATISTICS_CLICKED),
+                        InlineKeyboard("Сброс прогресса", RESET_PROGRESS),
+                    ),
                 )
             )
         )
@@ -65,7 +66,7 @@ class TelegramBotService(
         return response.body()
     }
 
-    fun sendingQuestionUser(chatId: Long, question: Question?, json: Json): String {
+    fun sendingQuestionUser(chatId: Long, question: Question?, botToken: String): String {
         if (question != null) {
             val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
 
@@ -75,7 +76,13 @@ class TelegramBotService(
                 ReplyMarkup
                     (
                     listOf(
-                        question.variants.map { word ->
+                        question.variants.filterIndexed { index, _ -> index >= question.variants.size / 2 }
+                            .map { word ->
+                                InlineKeyboard(
+                                    word.translate, word.questionWord
+                                )
+                            },
+                        question.variants.filterIndexed { index, _ -> index < question.variants.size / 2 }.map { word ->
                             InlineKeyboard(
                                 word.translate, word.questionWord
                             )
@@ -97,8 +104,8 @@ class TelegramBotService(
             return response.body()
         } else
             return """
-                ${sendMessage(chatId, "Поздравляем, вы выучили все слова !!!", json)}
-                ${sendMenu(chatId, json)}
+                ${sendMessage(chatId, "Поздравляем, вы выучили все слова !!!", botToken)}
+                ${sendMenu(chatId, botToken)}
             """.trimIndent()
     }
 }

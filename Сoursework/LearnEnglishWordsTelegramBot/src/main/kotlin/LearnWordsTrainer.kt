@@ -1,4 +1,3 @@
-
 import java.io.File
 
 data class Statistics(
@@ -19,10 +18,9 @@ data class Question(
 )
 
 class LearnWordsTrainer(
-
     private val fileName: String = "words.txt",
-    private val learnedAnswerCount: Int = 3,
-    private val countOfQuestionWords: Int = 4
+    private val learnedAnswerCount: Int = 1,
+    private val countOfQuestionWords: Int = 6
 ) {
     var dictionary = loadDictionary()
 
@@ -81,7 +79,7 @@ class LearnWordsTrainer(
                         )
                     } else null
                 }
-        }catch ( e : IndexOutOfBoundsException){
+        } catch (e: IndexOutOfBoundsException) {
             throw IllegalStateException("некорректный фаил")
         }
     }
