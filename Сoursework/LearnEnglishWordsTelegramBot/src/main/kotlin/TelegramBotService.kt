@@ -13,17 +13,18 @@ const val MAIN_MENU = "/start"
 
 class TelegramBotService(
     private val client: HttpClient = HttpClient.newBuilder().build(),
+    private val botToken: String,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun getUpdates(updateId: Long, botToken: String): Response {
+    fun getUpdates(updateId: Long): Response {
         val urlGetUpdates = "$API_TELEGRAM$botToken/getUpdates?offset=$updateId"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
         return json.decodeFromString(response.body())
     }
 
-    fun sendMessage(chatId: Long, message: String, botToken: String): String {
+    fun sendMessage(chatId: Long, message: String): String {
         val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId,
@@ -38,7 +39,7 @@ class TelegramBotService(
         return response.body()
     }
 
-    fun sendMenu(chatId: Long, botToken: String): String {
+    fun sendMenu(chatId: Long): String {
         val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId,
@@ -66,15 +67,14 @@ class TelegramBotService(
         return response.body()
     }
 
-    fun sendingQuestionUser(chatId: Long, question: Question?, botToken: String): String {
+    fun sendingQuestionUser(chatId: Long, question: Question?): String {
         if (question != null) {
             val sendMessage = "$API_TELEGRAM$botToken/sendMessage"
 
             val requestBody = SendMessageRequest(
                 chatId,
                 "Выберите перевод слова: ${question.correctAnswer.questionWord}",
-                ReplyMarkup
-                    (
+                ReplyMarkup(
                     listOf(
                         question.variants.filterIndexed { index, _ -> index >= question.variants.size / 2 }
                             .map { word ->
@@ -104,8 +104,8 @@ class TelegramBotService(
             return response.body()
         } else
             return """
-                ${sendMessage(chatId, "Поздравляем, вы выучили все слова !!!", botToken)}
-                ${sendMenu(chatId, botToken)}
+                ${sendMessage(chatId, "Поздравляем, вы выучили все слова !!!")}
+                ${sendMenu(chatId)}
             """.trimIndent()
     }
 }

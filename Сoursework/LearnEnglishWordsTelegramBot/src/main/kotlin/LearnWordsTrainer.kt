@@ -20,7 +20,7 @@ data class Question(
 class LearnWordsTrainer(
     private val fileName: String = "words.txt",
     private val learnedAnswerCount: Int = 1,
-    private val countOfQuestionWords: Int = 6
+    private val countOfQuestionWords: Int = 4
 ) {
     var dictionary = loadDictionary()
 

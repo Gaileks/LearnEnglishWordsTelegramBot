@@ -74,12 +74,12 @@ fun main(args: Array<String>) {
     val botToken = args[0]
     var lastUpdateId = 0L
     val trainers = HashMap<Long, LearnWordsTrainer>()
-    val telegramBotService = TelegramBotService()
+    val telegramBotService = TelegramBotService(botToken = botToken)
 
     while (true) {
         waitingTime
         val response: Response = runCatching {
-            telegramBotService.getUpdates(lastUpdateId, botToken)
+            telegramBotService.getUpdates(lastUpdateId)
         }
             .getOrElse {
                 println("${it.message}")
@@ -88,7 +88,7 @@ fun main(args: Array<String>) {
 
         if (response.result.isEmpty()) continue
         val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, trainers, botToken, telegramBotService) }
+        sortedUpdates.forEach { handleUpdate(it, trainers,telegramBotService) }
         lastUpdateId = sortedUpdates.last().updateId + 1
     }
 }
@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
 fun handleUpdate(
     update: Update,
     trainers: HashMap<Long, LearnWordsTrainer>,
-    botToken: String,
+
     telegramBotService: TelegramBotService,
 ) {
     val message = update.message?.text
@@ -107,48 +107,48 @@ fun handleUpdate(
 
     when (data?.lowercase()) {
         MAIN_MENU -> {
-            telegramBotService.sendMenu(chatId, botToken)
+            telegramBotService.sendMenu(chatId)
         }
 
         RESET_PROGRESS -> {
             trainer.dictionary = trainer.resetProgress()
-            telegramBotService.sendMessage(chatId, "Прогресс  обнулен!", botToken)
+            telegramBotService.sendMessage(chatId, "Прогресс  обнулен!")
             question = trainer.getNextQuestion()
-            telegramBotService.sendMenu(chatId, botToken)
+            telegramBotService.sendMenu(chatId)
         }
 
         STATISTICS_CLICKED -> {
             val statistics = trainer.getStatistics()
             telegramBotService.sendMessage(
                 chatId,
-                "Выучено ${statistics.learned} из ${statistics.total} слов | ${statistics.percent}%", botToken
+                "Выучено ${statistics.learned} из ${statistics.total} слов | ${statistics.percent}%"
             )
-            telegramBotService.sendMenu(chatId, botToken)
+            telegramBotService.sendMenu(chatId)
         }
 
         LEARN_WORDS_CLICKED -> {
-            telegramBotService.sendingQuestionUser(chatId, question, botToken)
+            telegramBotService.sendingQuestionUser(chatId, question)
         }
     }
     if (message?.lowercase() == "/start") {
-        telegramBotService.sendMenu(chatId, botToken)
+        telegramBotService.sendMenu(chatId)
 
     } else if (question?.variants?.map { it.questionWord }?.contains(data?.lowercase()) == true) {
 
         if (data?.lowercase() == question?.correctAnswer?.questionWord) {
-            telegramBotService.sendMessage(chatId, "Вы правильно перевели слово", botToken)
+            telegramBotService.sendMessage(chatId, "Вы правильно перевели слово")
             val correctAnswerIndex = trainer.dictionary.indexOf(question?.correctAnswer)
             trainer.dictionary[correctAnswerIndex].correctAnswersCount++
             trainer.writingToFile(trainer.dictionary)
             question = trainer.getNextQuestion()
-            telegramBotService.sendingQuestionUser(chatId, question, botToken)
+            telegramBotService.sendingQuestionUser(chatId, question)
         } else {
             telegramBotService.sendMessage(
                 chatId,
-                "Не правильный ответ - правильный ответ: ${question?.correctAnswer?.translate}", botToken
+                "Не правильный ответ - правильный ответ: ${question?.correctAnswer?.translate}"
             )
             question = trainer.getNextQuestion()
-            telegramBotService.sendingQuestionUser(chatId, question, botToken)
+            telegramBotService.sendingQuestionUser(chatId, question)
         }
     }
 }
