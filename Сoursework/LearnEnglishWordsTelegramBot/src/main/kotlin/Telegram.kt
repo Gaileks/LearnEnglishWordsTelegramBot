@@ -1,6 +1,5 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 @Serializable
 data class SendMessageRequest(
@@ -74,25 +73,22 @@ var question = trainer.getNextQuestion()
 fun main(args: Array<String>) {
     val botToken = args[0]
     var lastUpdateId = 0L
-    val json = Json { ignoreUnknownKeys = true }
     val trainers = HashMap<Long, LearnWordsTrainer>()
     val telegramBotService = TelegramBotService()
 
     while (true) {
         waitingTime
-        val responseString: String = runCatching {
+        val response: Response = runCatching {
             telegramBotService.getUpdates(lastUpdateId, botToken)
         }
             .getOrElse {
                 println("${it.message}")
-                ""
+                Response(result = listOf())
             }
-        if (responseString == "") continue
 
-        val response: Response = json.decodeFromString(responseString)
         if (response.result.isEmpty()) continue
         val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, trainers, botToken) }
+        sortedUpdates.forEach { handleUpdate(it, trainers, botToken, telegramBotService) }
         lastUpdateId = sortedUpdates.last().updateId + 1
     }
 }
@@ -101,8 +97,8 @@ fun handleUpdate(
     update: Update,
     trainers: HashMap<Long, LearnWordsTrainer>,
     botToken: String,
+    telegramBotService: TelegramBotService,
 ) {
-    val telegramBotService = TelegramBotService()
     val message = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val trainer = trainers.getOrPut(chatId) { LearnWordsTrainer("$chatId.txt") }
