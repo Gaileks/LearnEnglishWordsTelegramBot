@@ -5,6 +5,7 @@ data class Statistics(
     val total: Int,
     val percent: Int,
 )
+
 data class Word(
     val questionWord: String,
     val translate: String,
@@ -17,8 +18,8 @@ data class Question(
 )
 
 class LearnWordsTrainer(
-    private val wordFileName: String = "words.txt",
-    private val learnedAnswerCount: Int = 3,
+    private val fileName: String = "words.txt",
+    private val learnedAnswerCount: Int = 1,
     private val countOfQuestionWords: Int = 4
 ) {
     var dictionary = loadDictionary()
@@ -53,7 +54,7 @@ class LearnWordsTrainer(
     }
 
     fun writingToFile(dictionary: List<Word>) {
-        val wordFile = File(wordFileName)
+        val wordFile = File(fileName)
         val textToWriting = dictionary.joinToString("") {
             "${it.questionWord}|${it.translate}|${it.correctAnswersCount}\n"
         }
@@ -61,17 +62,25 @@ class LearnWordsTrainer(
     }
 
     private fun loadDictionary(): List<Word> {
-        return File(wordFileName)
-            .readLines()
-            .mapNotNull { it ->
-                val line = it.split("|").filter { it.isNotEmpty() }
-                if (line.size == 3) {
-                    Word(
-                        line.getOrNull(0) ?: return@mapNotNull null,
-                        line.getOrNull(1) ?: return@mapNotNull null,
-                        line[2].toIntOrNull() ?: return@mapNotNull null
-                    )
-                } else null
+        try {
+            val wordsFile = File(fileName)
+            if (!wordsFile.exists()) {
+                File("words.txt").copyTo(wordsFile)
             }
+            return File(fileName)
+                .readLines()
+                .mapNotNull { it ->
+                    val line = it.split("|").filter { it.isNotEmpty() }
+                    if (line.size == 3) {
+                        Word(
+                            line.getOrNull(0) ?: return@mapNotNull null,
+                            line.getOrNull(1) ?: return@mapNotNull null,
+                            line[2].toIntOrNull() ?: return@mapNotNull null
+                        )
+                    } else null
+                }
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalStateException("некорректный фаил")
+        }
     }
 }
